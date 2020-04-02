@@ -1,94 +1,63 @@
-import React, { Component } from "react";
-import Jumbotron from "../components/Jumbotron";
+import React from "react";
+import Form from "../components/Form";
+import Results from "../components/Results";
 import API from "../utils/API";
-import { Col, Row, Container } from "../components/Grid";
-import { Input, TextArea, FormBtn } from "../components/Form";
 
-class Search extends Component {
+class Search extends React.Component {
     state = {
-      books: [],
-      title: "",
-      author: "",
-      synopsis: ""
-    };
-  
-    componentDidMount() {
-      this.loadBooks();
-    }
-  
-    loadBooks = () => {
-      API.getBooks()
-        .then(res =>
-          this.setState({ books: res.data, title: "", author: "", synopsis: "" })
-        )
-        .catch(err => console.log(err));
-    };
-  
-    deleteBook = id => {
-      API.deleteBook(id)
-        .then(res => this.loadBooks())
-        .catch(err => console.log(err));
-    };
-  
-    handleInputChange = event => {
-      const { name, value } = event.target;
-      this.setState({
-        [name]: value
-      });
-    };
-  
-    handleFormSubmit = event => {
-      event.preventDefault();
-      if (this.state.title && this.state.author) {
-        API.saveBook({
-          title: this.state.title,
-          author: this.state.author,
-          synopsis: this.state.synopsis
-        })
-          .then(res => this.loadBooks())
-          .catch(err => console.log(err));
-      }
+        value: "",
+        books: []
     };
 
-render() {
-    return (
-        <Container fluid>
-        <Row>
-          <Col size="md-6">
-            <Jumbotron>
-              <h1>What Books Should I Read?</h1>
-            </Jumbotron>
-            <form>
-              <Input
-                value={this.state.title}
-                onChange={this.handleInputChange}
-                name="title"
-                placeholder="Title (required)"
-              />
-              <Input
-                value={this.state.author}
-                onChange={this.handleInputChange}
-                name="author"
-                placeholder="Author (required)"
-              />
-              <TextArea
-                value={this.state.synopsis}
-                onChange={this.handleInputChange}
-                name="synopsis"
-                placeholder="Synopsis (Optional)"
-              />
-              <FormBtn
-                disabled={!(this.state.author && this.state.title)}
-                onClick={this.handleFormSubmit}
-              >
-                Submit Book
-              </FormBtn>
-            </form>
-          </Col>
-        </Row>
-        </Container>
-    )
-  };
-};
+    componentDidMount() {
+        this.searchBook();
+    }
+
+    makeBook = bookData => {
+        return {
+            _id: bookData.id,
+            title: bookData.volumeInfo.title,
+            authors: bookData.volumeInfo.authors,
+            description: bookData.volumeInfo.description,
+            image: bookData.volumeInfo.imageLinks.thumbnail,
+            link: bookData.volumeInfo.previewLink
+        }
+    }
+
+    searchBook = query => {
+        API.getBook(query)
+            .then(res => this.setState({ books: res.data.items.map(bookData => this.makeBook(bookData)) }))
+            .catch(err => console.error(err));
+    };
+
+    handleInputChange = event => {
+        const name = event.target.name;
+        const value = event.target.value;
+        this.setState({
+            [name]: value
+        });
+    };
+
+    handleFormSubmit = event => {
+        event.preventDefault();
+        this.searchBook(this.state.search);
+    };
+
+    render() {
+        return (
+            <div>
+                <Form
+                    search={this.state.search}
+                    handleInputChange={this.handleInputChange}
+                    handleFormSubmit={this.handleFormSubmit}
+                />
+                <div className="container">
+                    <h2>Results</h2>
+                    <Results books={this.state.books} />
+                </div>
+            </div>
+        )
+    }
+}
 
 export default Search;
