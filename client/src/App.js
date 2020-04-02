@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route,} from "react-router-dom";
 
 import Saved from "./pages/Saved";
 import Search from "./pages/Search";
@@ -8,6 +8,8 @@ import NoMatch from "./pages/noMatch";
 import Nav from "./components/Nav";
 import Header from "./components/Header";
 import Wrapper from "./components/Wrapper";
+
+import "./App.css";
 
 function App() {
   return (
